@@ -10,14 +10,14 @@
 #include "userMSN.h"
 
 //node_t user_list;
-
+#define MAX_NUM_CLIENTS 4
 
 int main()
 {
   node_t *user_list;
   user_t user;
   user_t* user_ptr;
-  int i,state;
+  int i,state,ci,pid;
   user_list = NULL;
   char location[15];
   int challenge;
@@ -63,10 +63,18 @@ int main()
 	exit(1);
       }
       from_len=sizeof(from);
-      if((new_socket=accept(sd,(struct sockaddr*) &from,&from_len))==-1){
-        perror("Servidor:Accept");
-	exit(1);
-      }
+
+      for(ci = 0;ci < MAX_NUM_CLIENTS;ci++){
+
+	
+	//Se bloquea esperando peticion de client
+	if((new_socket=accept(sd,(struct sockaddr*) &from,&from_len))==-1){
+	  perror("Servidor:Accept");
+	  exit(1);
+	}
+
+      if ( (pid = fork()) == 0 ) {
+	close(sd); /* child closes listening socket */
       do{
 	result = recv(new_socket,buffer,80,0);
 
@@ -205,4 +213,7 @@ int main()
 	  freeRequest(&req);
 	  //}
       }while(!EOT);
+
+      }//Fin codigo hijo
+      }//Fin Server for
 }
