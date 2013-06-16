@@ -3,10 +3,10 @@
 all: server client
 
 server: server.o
-	gcc -o server server.o
+	gcc md5/md5.o -o server server.o
 
 client: client.o
-	gcc -o client client.o
+	gcc md5/md5.o -o client client.o
 
 server.o: ser_eje.c 
 	gcc -c ser_eje.c -o server.o

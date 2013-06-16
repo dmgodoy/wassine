@@ -17,6 +17,9 @@ void main(int argc, char* argv[])
    request_msn_t req;
    char* ip_server;
    char buffer[82];
+   char secreto[256];
+   int reto;
+   unsigned char out[16];
    if(argc > 2){
      printf("Numero de argumentos incorrecto:\n\
 Se esperaba %s [ip_servidor]",argv[0]);
@@ -41,6 +44,7 @@ Se esperaba %s [ip_servidor]",argv[0]);
     do{
       char user_name[256];
       char location[25];
+      unsigned char out[16];
       int state;
       puts("Seleccione accion:");      
       showMenu();
@@ -74,8 +78,11 @@ Se esperaba %s [ip_servidor]",argv[0]);
         scanf("%s",user_name);
 	scanf("%s",location);
 	scanf("%i",&state);
-        sprintf(buffer,"%i %s %s %i",POST_NAME_LOCATION_STATE,
-		user_name,location,state);
+	scanf("%s",secreto);
+        sprintf(buffer,"%i %s %s %i %s",POST_NAME_LOCATION_STATE,
+		user_name,location,state,secreto);
+	getMD5(buffer,strlen(buffer),out);
+	printf("%s\n",out);
         if(send(sd,buffer,80,0)==-1){
           perror("Cliente:Send");
           exit(1);
