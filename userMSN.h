@@ -11,6 +11,8 @@ typedef enum{
   GET_STATE,
   POST_NAME_LOCATION_STATE,
   GET_LOCATION,
+  AUTH,
+  CHALLENGE,
   EXIT,
 }request_type_t;
 
@@ -27,6 +29,7 @@ typedef struct{
   state_t state;
   char name[50];
   char location[15];
+  char secret[256];
 }user_t;
 
 struct node_type{
@@ -119,6 +122,7 @@ void usercpy(user_t *dest,user_t* src){
   dest->state = src->state;
   strcpy(dest->name,src->name);
   strcpy(dest->location,src->location);
+  strcpy(dest->secret,src->secret);
 
 }
 
@@ -145,6 +149,7 @@ node_t* removeUser(char* user_name,node_t* list){
       free(actual);
       actual = tmp;
     }
+    actual=actual->next;
   }
   return NULL;
 }
@@ -155,6 +160,7 @@ user_t* getUser(char* user_name,node_t* list){
     if(strcmp(actual->user.name,user_name)==0){
       return &actual->user;
     }
+    actual = actual->next;
   }
   return NULL;
 }
@@ -175,7 +181,7 @@ void showUsers(node_t* list){
 void showMenu(){
 
   printf("%i - Get state from 'user'\n",GET_STATE);
-  printf("%i - Post name,location and state\n",POST_NAME_LOCATION_STATE);
+  printf("%i - Post name,location and state - user_secret\n",POST_NAME_LOCATION_STATE);
   printf("%i - Get location 'user'\n",GET_LOCATION);
   printf("%i - Close conection\n\n",EXIT);
 

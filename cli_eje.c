@@ -17,8 +17,8 @@ void main(int argc, char* argv[])
    request_msn_t req;
    char* ip_server;
    char buffer[82];
-   char secreto[256];
-   int reto;
+   char secret[256];
+   int challenge,i;
    unsigned char out[16];
    if(argc > 2){
      printf("Numero de argumentos incorrecto:\n\
@@ -78,9 +78,67 @@ Se esperaba %s [ip_servidor]",argv[0]);
         scanf("%s",user_name);
 	scanf("%s",location);
 	scanf("%i",&state);
-	scanf("%s",secreto);
-        sprintf(buffer,"%i %s %s %i %s",POST_NAME_LOCATION_STATE,
-		user_name,location,state,secreto);
+	scanf("%s",secret);
+	//Primero nos autenticamos
+        sprintf(buffer,"%i %s",AUTH,user_name);
+	if(send(sd,buffer,80,0)==-1){
+          perror("Cliente:Send");
+          exit(1);
+        }
+	result = recv(sd,buffer,80,0);
+	if(result==-1){
+          perror("Cliente:Recv");
+          exit(1);
+        }
+	split_request(buffer,&req);
+	if(req.req_type==CHALLENGE){
+	  printf("CHALL (RETO) Recibido %i\n",atoi(req.req[0]));
+	//generar md5 user_name:reto:secreto
+	  sprintf(buffer,"%s%i%s",user_name,atoi(req.req[0]),secret);
+	  printf("MD5 %s : ",buffer);
+	  getMD5(buffer,strlen(buffer),out);
+	  for (i=0; i<16; i++) {
+	    printf("%02x", out[i]);
+	  }
+	  printf("\n");
+	  //Enviamos datos update
+	  sprintf(buffer,"%i %s %s %i",POST_NAME_LOCATION_STATE,
+		  user_name,location,state);	
+
+	  if(send(sd,buffer,80,0)==-1){
+	    perror("Cliente:Send");
+	    exit(1);
+	  }	  
+	  //Enviamos md5
+	  if(send(sd,out,16,0)==-1){
+	    perror("Cliente:Send");
+	    exit(1);
+	  }
+	  result = recv(sd,buffer,80,0);
+	  if(result==-1){
+	    perror("Cliente:Recv");
+	    exit(1);
+	  }
+	  split_request(buffer,&req);
+	  if(req.req_type==OK){
+	    printf("Datos de usuario actualizados.\n");
+	  }else	if(req.req_type==ERROR){
+	    printf("El codigo MD5 no es correcto.\nDatos no actualizados\n");
+	    
+	  }
+
+	  
+	  //Esperamos respuesta
+	}else if(req.req_type==ERROR){
+
+	  printf("El usuario %s no existe.\n",user_name);
+
+	}
+	//Hemos sido autenticados
+	/*
+        sprintf(buffer,"%i %s %s %i",POST_NAME_LOCATION_STATE,
+		user_name,location,state);	
+
 	getMD5(buffer,strlen(buffer),out);
 	printf("%s\n",out);
         if(send(sd,buffer,80,0)==-1){
@@ -94,7 +152,7 @@ Se esperaba %s [ip_servidor]",argv[0]);
         }
 	split_request(buffer,&req);
 	if(req.req_type==OK)
-	printf("OK Recibido\n");
+	printf("OK Recibido\n");*/
 	break;
       case GET_LOCATION:
         scanf("%s",user_name);
