@@ -1,4 +1,3 @@
 wassine
 =======
-
-Wassine repo
+Servicio de directorio autenticado implementado en C para la práctica 3 de TDRC2.
